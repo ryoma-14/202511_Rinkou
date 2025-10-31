@@ -1,7 +1,7 @@
-%% utokyo eeis rinko template
+%% utokyo eeis rinko template created by Ryoma Hirata
 
 % documentclass
-\documentclass[a4paper,10.5pt,twocolumn]{bxjsarticle}
+\documentclass[a4paper,10.5pt,dvipdfmx]{bxjsarticle}
 
 \usepackage[dvipdfmx]{graphicx} % 画像の取扱いに必要
 \usepackage{fancyhdr} % ヘッダー・フッターの設定に必要
@@ -9,39 +9,46 @@
 \usepackage{bxjalipsum}
 
 \usepackage{cite}
+\usepackage{multicol}
+\usepackage{geometry}
+
+\geometry{top=10mm,bottom=10mm,left=15mm,right=15mm}
 
 \pagestyle{fancy}
 \fancyhf{} % ヘッダー・フッターの初期化
-
-% ヘッダーの設定
-\lhead{電気系修士輪講資料}
-\rhead{2025年 11月 14日}
 
 % フッターの設定
 \cfoot{\thepage} % ページ番号を中央に表示
 
 \renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
 
 \begin{document}
 
 \thispagestyle{fancy}
 
-% タイトル
-\begin{center}
-  {\LARGE \bfseries スパイキングニューラルネットワークを用いたドローン飛行制御に関する研究調査 \par}
-  \vspace{2mm}
-  {\large A Survey on Spiking Neural Network for Drone Flight Control \par}
-\end{center}
+\noindent
+\fbox{
+  \begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}
+    電気系修士輪講資料
+    \hfill
+    2025年 11月 14日
+    % タイトル
+    \begin{center}
+      {\LARGE \bfseries スパイキングニューラルネットワークを用いた\\ドローン飛行制御に関する研究調査 \par}
+      \vspace{2mm}
+      {\large A Survey on Spiking Neural Network for Drone Flight Control \par}
+    \end{center}
+
+    \vspace{5mm}
+
+    \noindent
+    指導教員： 福田盛介 教授
+    \hfill
+    修士課程１年 37-256564 平田涼馬
+  \end{minipage}
+}
 
 \vspace{5mm}
-
-\noindent
-指導教員: 福田盛介 教授
-\hfill
-修士課程１年 37-256564 平田涼馬
-
-\vspace{10mm}
 
 % アブストラクト
 \begin{center}
@@ -49,18 +56,29 @@
 \end{center}
 \lipsum[1] % ダミーテキスト
 
-\vspace{5mm}
+\begin{multicols}{2}
 
 % 本文
 \section{序論}
+近年、ドローンは様々な分野での応用が進んでおり，
 
+\subsection{スパイキングニューラルネットワーク}
 
-\section{}
-\bxjlipsum[2-4] % ダミーテキスト
+\section{イベントカメラを用いた制御}
+あいう\cite{paredes2024fully}
 
-\section{}
-\bxjlipsum[5-7] % ダミーテキスト
+\section{強化学習を用いた制御}
+あいう\cite{lee2025bio}
 
+\section{フライトコントローラーを挟まない制御}
+あいう\cite{stroobants2025neuromorphic}
+
+\section{まとめ}
+あいう
+
+\bibliographystyle{junsrt}
 \bibliography{references}
+
+\end{multicols}
 
 \end{document}
