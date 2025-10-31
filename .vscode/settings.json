@@ -15,13 +15,13 @@
     "latex-workshop.latex.recipes": [
       {
     //論文用レシピ
-          "name": "platex",
+          "name": "uplatex",
           "tools": [
-              "platex",
-              "pbibtex",
-              "platex",
+              "uplatex",
+              "upbibtex",
+              "uplatex",
             //   "mendex",
-              "platex",
+              "uplatex",
               "dvipdfmx",
               "move",
               "delete"
@@ -32,11 +32,11 @@
     //要旨用レシピ
         "name": "preliminary",
         "tools": [
-            "platex",
-            "pbibtex",
-            "platex",
+            "uplatex",
+            "upbibtex",
+            "uplatex",
             // "mendex",
-            "platex",
+            "uplatex",
             "dvipdfmx",
             "move",
             "delete"
@@ -45,8 +45,8 @@
     ],
     "latex-workshop.latex.tools": [
       {
-          "name": "platex",
-          "command": "platex",
+          "name": "uplatex",
+          "command": "uplatex",
           "args": [
               "-synctex=1",
               "-interaction=nonstopmode",
@@ -64,10 +64,9 @@
           ]
       },
       {
-          "name": "pbibtex",
-          "command": "pbibtex",
+          "name": "upbibtex",
+          "command": "upbibtex",
           "args": [
-              "-kanji=utf8",
               "%DOCFILE%"
           ]
       },
