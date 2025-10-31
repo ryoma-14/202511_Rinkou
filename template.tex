@@ -1,0 +1,62 @@
+%% utokyo eeis rinko template
+
+% documentclass
+\documentclass[a4paper,10.5pt,twocolumn]{bxjsarticle}
+
+\usepackage[dvipdfmx]{graphicx} % 画像の取扱いに必要
+\usepackage{fancyhdr} % ヘッダー・フッターの設定に必要
+\usepackage{lipsum} % ダミーテキスト生成に必要
+\usepackage{bxjalipsum}
+
+\pagestyle{fancy}
+\fancyhf{} % ヘッダー・フッターの初期化
+
+% ヘッダーの設定
+\lhead{電気系修士輪講資料}
+\rhead{2025年 11月 14日}
+
+% フッターの設定
+\cfoot{\thepage} % ページ番号を中央に表示
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\begin{document}
+
+\thispagestyle{fancy}
+
+% タイトル
+\begin{center}
+  {\LARGE \bfseries 日本語タイトルを追加 \par}
+  \vspace{2mm}
+  {\large English Title \par}
+\end{center}
+
+\vspace{5mm}
+
+\noindent
+指導教員: 〇〇 教授
+\hfill
+〇〇課程〇年 37-〇〇〇〇〇 名前
+
+\vspace{10mm}
+
+% アブストラクト
+\begin{center}
+  \bfseries Abstract
+\end{center}
+\lipsum[1] % ダミーテキスト
+
+\vspace{5mm}
+
+% 本文
+\section{序論}
+\bxjlipsum[1] % ダミーテキスト
+
+\section{}
+\bxjlipsum[2-4] % ダミーテキスト
+
+\section{}
+\bxjlipsum[5-7] % ダミーテキスト
+
+\end{document}
