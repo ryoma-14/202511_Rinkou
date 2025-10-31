@@ -8,6 +8,8 @@
 \usepackage{lipsum} % ダミーテキスト生成に必要
 \usepackage{bxjalipsum}
 
+\usepackage{cite}
+
 \pagestyle{fancy}
 \fancyhf{} % ヘッダー・フッターの初期化
 
@@ -51,12 +53,14 @@
 
 % 本文
 \section{序論}
-\bxjlipsum[1] % ダミーテキスト
+
 
 \section{}
 \bxjlipsum[2-4] % ダミーテキスト
 
 \section{}
 \bxjlipsum[5-7] % ダミーテキスト
+
+\bibliography{references}
 
 \end{document}
