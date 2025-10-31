@@ -54,25 +54,37 @@
 \begin{center}
   \bfseries Abstract
 \end{center}
-\lipsum[1] % ダミーテキスト
+AI-based flight control for drones has gained significant attention for applications in unknown and dynamic environments. 
+Particularly, in environments where communication delays are significant, such as Mars, there is a need for AI models that
+can operate onboard, and the application of Spiking Neural Networks (SNNs) is anticipated. This survey analyzes recent research
+related to SNN-based drone flight control, focusing on (1) methods using reinforcement learning, (2) methods using imitation learning,
+and (3) methods combined with event-based vision sensors. Finally, we summarize and compare the key results of each approach and
+discuss their future prospects to the flight control of Mars exploration drones.
 
 \begin{multicols}{2}
 
 % 本文
 \section{序論}
-近年、ドローンは様々な分野での応用が進んでおり，
+ドローンは地形や障害物の影響を受けにくい高い移動能力や導入・運用コストの低さなどの特徴から農業や建設，
+物流，惑星探査など幅広い用途への応用が進んでいる．これらの応用において，高い自律性を持つドローンの開発が
+求められている．ドローンの飛行制御には，従来の制御理論に基づくPID制御やモデル予測制御などが用いられる
+ことが一般的であったが，これらの手法には未知の環境や動的な環境への適応性，複雑なタスクの遂行能力に限界
+がある．これらの課題に対処するため，近年ではニューラルネットワークを用いた制御手法に注目が集まっている．
 
 \subsection{スパイキングニューラルネットワーク}
 
-\section{イベントカメラを用いた制御}
-あいう\cite{paredes2024fully}
-
-\section{強化学習を用いた制御}
+\section{強化学習SNNを用いたナビゲーション}
 あいう\cite{lee2025bio}
 
-\section{フライトコントローラーを挟まない制御}
+\section{模倣学習SNNを用いたモーター制御}
 あいう\cite{stroobants2025neuromorphic}
 
+\section{イベントベース入力によるSNN制御}
+あいう\cite{paredes2024fully}
+\subsection{ニューロモルフィック視覚処理}
+\subsection{イベントカメラの概要}
+
+\subsection{}
 \section{まとめ}
 あいう
 
