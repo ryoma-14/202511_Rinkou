@@ -11,7 +11,8 @@
 \usepackage{cite}
 \usepackage{multicol}
 \usepackage{geometry}
-\usepackage{wrapfig}
+\usepackage{caption}
+% \usepackage{wrapfig}
 
 \geometry{top=10mm,bottom=10mm,left=15mm,right=15mm}
 
@@ -80,12 +81,11 @@ discuss their future prospects to the flight control of Mars exploration drones.
 これらの課題に対処するため，省電力かつ高効率な計算が可能なスパイキングニューラルネットワーク(SNN)を
 用いたドローンの飛行制御手法が注目されている．
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=80mm]{figures/SNN_operation.png}
-  \caption{スパイキングニューラルネットワークの概念図 (\cite{SnnfromScratch}を一部改変)}
+\begin{center}
+  \includegraphics[width=\linewidth]{figures/SNN_operation.png}
+  \captionof{figure}{スパイキングニューラルネットワークの概念図 (\cite{SnnfromScratch}を一部改変)}
   \label{fig:snn_operation}
-\end{figure}  
+\end{center}
 
 \subsection{スパイキングニューラルネットワーク}
 スパイキングニューラルネットワーク(SNN)とは，生物の脳が{0,1}のスパイクを用いて情報伝達することを模倣した
@@ -116,12 +116,11 @@ NASAの火星ドローン「Ingenuity」は，火星大気中での飛行実証�
 として，SNNを用いたドローン制御は，省電力かつリアルタイム処理が可能であるため，火星探査ドローンへの
 応用が期待されている\cite{harbour2024martian}．
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=80mm]{figures/Ingenuity.png}
-  \caption{火星ドローンIngenuity (\cite{Ingenuity}より引用)}
+\begin{center}
+  \includegraphics[width=\linewidth]{figures/Ingenuity.png}
+  \captionof{figure}{火星ドローンIngenuity (\cite{Ingenuity}より引用)}
   \label{fig:ingenuity_on_mars}
-\end{figure}
+\end{center}
 
 \subsection{本調査の目的}
 本調査では，SNNを用いたドローンの飛行制御について，シミュレーションによりSNNを用いた強化学習に取り組んだ
