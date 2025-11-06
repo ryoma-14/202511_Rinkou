@@ -81,11 +81,11 @@ discuss their future prospects to the flight control of Mars exploration drones.
 これらの課題に対処するため，省電力かつ高効率な計算が可能なスパイキングニューラルネットワーク(SNN)を
 用いたドローンの飛行制御手法が注目されている．
 
-\begin{center}
-  \includegraphics[width=\linewidth]{figures/SNN_operation.png}
-  \captionof{figure}{スパイキングニューラルネットワークの概念図 (\cite{SnnfromScratch}を一部改変)}
-  \label{fig:snn_operation}
-\end{center}
+% \begin{center}
+%   \includegraphics[width=\linewidth]{figures/SNN_operation.png}
+%   \captionof{figure}{スパイキングニューラルネットワークの概念図 (\cite{SnnfromScratch}を一部改変)}
+%   \label{fig:snn_operation}
+% \end{center}
 
 \subsection{スパイキングニューラルネットワーク}
 スパイキングニューラルネットワーク(SNN)とは，生物の脳が{0,1}のスパイクを用いて情報伝達することを模倣した
@@ -117,7 +117,7 @@ NASAの火星ドローン「Ingenuity」は，火星大気中での飛行実証�
 応用が期待されている\cite{harbour2024martian}．
 
 \begin{center}
-  \includegraphics[width=\linewidth]{figures/Ingenuity.png}
+  \includegraphics[width=\linewidth]{figures/Ingenuity_width.png}
   \captionof{figure}{火星ドローンIngenuity (\cite{Ingenuity}より引用)}
   \label{fig:ingenuity_on_mars}
 \end{center}
@@ -130,7 +130,14 @@ NASAの火星ドローン「Ingenuity」は，火星大気中での飛行実証�
 
 \section{イベントベース入力によるSNN制御\cite{paredes2024fully}}
 \subsection{概要}
-この研究では，イベントカメラを用いて取得したイベントベースの視覚情報を入力とし，低レベルの制御
+この研究では，イベントカメラを用いて取得したイベントベースの視覚情報を入力とし，低レベルの制御アクションを
+出力するSNNを提案している．
+
+\subsection{}
+本手法では，視覚処理を行うためのセンサーとしてイベントカメラを用いている．イベントカメラは，従来のフレーム
+ベースのカメラとは異なり，ピクセル毎に独立して輝度変化を検出し，変化があった場合のみイベントとして出力する
+センサーである．この特性から，$\mu s$オーダーの高い時間分解能，広いダイナミックレンジ，低消費電力などの
+利点を持ち，スパイクで情報を処理するSNNと相性が良い．
 
 \section{模倣学習SNNを用いたモーター制御\cite{stroobants2025neuromorphic}}
 \subsection{概要}
@@ -140,8 +147,15 @@ IMUの入力からモーターコマンドを出力するSNNベースの制御�
 すること，SNNを用いることにより生じるセンサーバイアスやフィードフォワード遅延に対象するための工夫を
 行っている．また，提案手法はCrazyflie上に実装され，評価が行われた．
 
-\subsection{ネットワーク構成}
+\subsection{}
+IMUは加速度センサーとジャイロスコープから構成され，ドローンの3自由度の加速度と角速度を提供する．
+IMUからの入力は
 
+\begin{center}
+  \includegraphics[width=\linewidth]{figures/neuro_network.png}
+  \captionof{figure}{提案手法のネットワーク構成 (\cite{stroobants2025neuromorphic})}
+  \label{fig:neuro_network}
+\end{center}
 
 \subsection{}
 
