@@ -12,6 +12,8 @@
 \usepackage{multicol}
 \usepackage{geometry}
 \usepackage{caption}
+\usepackage{amsmath}
+\usepackage{amssymb}
 % \usepackage{wrapfig}
 
 \geometry{top=10mm,bottom=10mm,left=15mm,right=15mm}
@@ -118,51 +120,187 @@ NASAの火星ドローン「Ingenuity」は，火星大気中での飛行実証�
 
 \begin{center}
   \includegraphics[width=\linewidth]{figures/Ingenuity_width.png}
-  \captionof{figure}{火星ドローンIngenuity (\cite{Ingenuity}より引用)}
+  \captionof{figure}{Ingenuity Mars Helicopter (\cite{Ingenuity})}
   \label{fig:ingenuity_on_mars}
 \end{center}
 
 \subsection{本調査の目的}
-本調査では，SNNを用いたドローンの飛行制御について，シミュレーションによりSNNを用いた強化学習に取り組んだ
-手法，模倣学習で訓練したSNNでセンサーデータをモーターコマンドにマッピングして制御を行う手法，入力に
-イベントカメラと呼ばれるビジョンセンサーを利用した制御手法について紹介し，各手法の分析から将来の火星探査
-ミッションにおけるドローン飛行制御への応用可能性について議論を行う．
+本調査では，ドローンの飛行制御において，SNNのネットワークを姿勢安定化や移動などの低レベル制御に用いた
+2つの研究と，経路計画を含めたナビゲーションにSNNを用いた1つの研究について紹介する．1本目の研究では，
+IMUセンサーを用いて姿勢推定と制御を行うことを提案したNeuromorphic attitude estimation and control
+\cite{stroobants2025neuromorphic}を紹介する．2本目の研究では，入力にイベントカメラを使用し，自己
+教師あり学習と進化アルゴリズムを組み合わせた複合学習により視覚ベースの自己運動制御を行うことを提案した
+Fully neuromorphic vision and control for autonomous drone flight\cite{paredes2024fully}を
+紹介する．3本目の研究では，強化学習アルゴリズムであるPPOによりSNNを学習させてドローンの高機動ナビゲーション
+を行うことを提案したBio-Inspired Drone Control A Reinforcement Learning-Trained Spiking Neural Networks for Agile Navigation in Dynamic Environment
+\cite{lee2025bio}を紹介する．最後に，各手法の分析から将来の火星探査ミッションにおけるドローン飛行制御
+への応用可能性について議論を行う．
 
-\section{イベントベース入力によるSNN制御\cite{paredes2024fully}}
-\subsection{概要}
-この研究では，イベントカメラを用いて取得したイベントベースの視覚情報を入力とし，低レベルの制御アクションを
-出力するSNNを提案している．
-
-\subsection{}
-本手法では，視覚処理を行うためのセンサーとしてイベントカメラを用いている．イベントカメラは，従来のフレーム
-ベースのカメラとは異なり，ピクセル毎に独立して輝度変化を検出し，変化があった場合のみイベントとして出力する
-センサーである．この特性から，$\mu s$オーダーの高い時間分解能，広いダイナミックレンジ，低消費電力などの
-利点を持ち，スパイクで情報を処理するSNNと相性が良い．
-
-\section{模倣学習SNNを用いたモーター制御\cite{stroobants2025neuromorphic}}
-\subsection{概要}
+\section{SNNによるドローンの低レベル制御}
+\subsection{IMUと模倣学習による姿勢推定・制御}
+\subsubsection{概要}
 この研究では，ドローンの自律制御を単一のニューロモルフィックチップのみで実現することを目的として，
 IMUの入力からモーターコマンドを出力するSNNベースの制御システムを提案している．本手法では，学習時に
 ネットワークを姿勢推定と制御の2つのサブネットワークに分割し，それぞれを教師あり学習，模倣学習で訓練
 すること，SNNを用いることにより生じるセンサーバイアスやフィードフォワード遅延に対象するための工夫を
 行っている．また，提案手法はCrazyflie上に実装され，評価が行われた．
 
-\subsection{}
-IMUは加速度センサーとジャイロスコープから構成され，ドローンの3自由度の加速度と角速度を提供する．
-IMUからの入力は
+\subsubsection{ネットワーク構成}
+本手法では、ネットワークへの入力としてIMUを用いている．IMUは加速度センサーとジャイロスコープから
+構成され，ドローンの3自由度の加速度と角速度を提供する．ネットワーク全体の構成は図\ref{fig:neuro_network}
+に示す通りである．
 
 \begin{center}
   \includegraphics[width=\linewidth]{figures/neuro_network.png}
-  \captionof{figure}{提案手法のネットワーク構成 (\cite{stroobants2025neuromorphic})}
+  \captionof{figure}{SNN network architecture (\cite{stroobants2025neuromorphic})}
   \label{fig:neuro_network}
 \end{center}
 
-\subsection{}
+2つに分割されたサブネットワークの前段では，IMUの6つの入力から，ドローンの姿勢の
+推定値が算出された．次に，ネットワークの後段では姿勢の推定値と目標の姿勢が入力され，モーターの
+トルクコマンドが出力された．このネットワークに用いられたニューロンモデルはシナプス電流の時間変化を
+考慮したCUBA-LIFモデルで，以下の式で表される．
+
+\begin{equation}
+  \begin{split}
+    v_i(t+1) = \tau^{mem}_i v_i(t) + i_i(t), \\
+    i_i(t+1) = \tau^{syn}_i i_i(t) + \sum_j W_{ij} s_j(t)
+  \end{split}
+  \label{equ:cuba_lif}
+\end{equation}
+
+ここで扱われる入出力はスパイクであるが，ネットワークの入出力は連続値であるため，線形層を用いた変換
+が行われている．これにより，スパイクのエンコードとデコードを学習に組み込むことで，最適化された変換
+を可能にしている．また，学習時には分割
+
+\begin{equation}
+  \begin{bmatrix}
+    \phi_{\text{est}} \\ \theta_{\text{est}} \\ \psi_{\text{est}}
+  \end{bmatrix}
+  = W_{\text{i}} W_{\text{o}} s(t)
+  \label{equ:mearge_networks}
+\end{equation}
+
+\subsubsection{SNNの学習方法}
+SNNの学習には模倣学習が用いられた．学習データは，姿勢推定に相補フィルタ，制御にカスケードPID制御を使用し
+手動で20分間飛行させ，500Hzで収集された．学習には，教師ありBPTTが用いられ，損失関数は以下の式で表される
+平均二乗誤差(MSE)とピアソンの相関損失を組み合わせたものとして定義された．
+
+\begin{equation}
+  J(p) = \text{MSE}(x, \hat{x}) + \frac{1}{2}(1 - \rho(x, \hat{x}))
+  \label{equ:neuro_loss_function}
+\end{equation}
+
+また，非連続なスパイク関数の微分を近似するために，代理勾配が用いられた．本手法では，スケール付き
+アークタンジェントの導関数であり，以下の式で表される．
+
+\begin{equation}
+  \frac{d}{dx} \left(\frac{1}{s} \arctan(s x) \right) = \frac{1}{1 + (s x)^2}
+  \label{equ:arctan_surrogate}
+\end{equation}
+
+SNNは，電流と電圧のリークを考慮するため，時間情報を集約するメモリを暗黙的に持つため，出力に遅延が生じる．
+この遅延を補償するために，学習データのラベルを6ステップ先の値にシフトさせて学習が行われた．
+さらに，模倣学習を用いた事による現実とのギャップを低減するために，学習データの拡張が行われた．具体的には，
+(ⅰ)初期の学習データで訓練されたSNNを用いて飛行させ，その時に学習データ用のコントローラーで得られるはず
+だったデータ，(ⅱ)通常のPIDのコントローラーにランダムな外乱を加えたデータ場合のデータが収集され，学習
+データに追加された．これらのデータ拡張により，より広範な状態空間での学習が可能となり，現実世界での適応性
+を向上させている．
+また，制御ネットワークの学習において，正解ラベルとしたPID制御器の積分器は学習を行うことが困難であった．
+これに対して，ネットワークのニューロンの一部の膜時定数を1に設定することで，入力信号を積分することを可能
+にする工夫が行われた．
+
+\subsubsection{制御精度の評価}
+位置移動の能力を評価するために，提案手法を用いて1m前進し原点に戻るタスクを実施し，通常のPID制御との比較が
+行われた．タスクは10回施行され，提案手法は全ての施行でPID制御と同等の性能を示し，安定した目標追従が可能な
+ことが示された．
+次に，各学習方法によるSNN制御とPID制御制御による姿勢応答の比較を行うため，ロールを$0°$，$+10°$，$-10°$，$0°$と
+変えて行ったときの応答の比較が行われた（図\ref{fig:neuro_comp}）．提案手法において，ロール角の目標値と
+制御値のRMSEは3.03°であり，姿勢推定及び制御が正確に行われてことが示された．また，PIDのRMSEは2.67°であり，
+提案手法より高い精度であったが，これは外部から姿勢情報を直接与えられており，制御のみが誤差の要因であるため
+だと考えられる．提案手法では，姿勢推定と制御の両方が誤差の要因となるため，このことからも提案手法は十分な
+精度を達成していることが示された．
+
+\begin{center}
+  \includegraphics[width=\linewidth]{figures/neuro_comp.png}
+  \captionof{figure}{Attitude step responses of A) the fully-trained SNN system, B) the SNN trained with augmentation, 
+  C) the SNN trained with time-shifted data and D) the regular PID flight stack. The images on top show the Crazyflie 
+  during the different maneuvers.(\cite{stroobants2025neuromorphic})}
+  \label{fig:neuro_comp}
+\end{center}
+
+\subsubsection{消費電力の分析}
+最後に，本手法における消費電力の分析が行われた．提案手法は使用した小型クアッドローターに対して，現在利用
+可能なニューロモルフィックチップが大きすぎるため，従来のマルチプロセッサにて実装が行われた．一方で，SNN
+を用いることによる省電力性は単一のニューロモルフィックチップで動作させた場合に得られる．そのため，潜在的
+な消費電力の削減効果を評価するために，ネットワークが行う演算数に基づいて，消費電力の推定が行われた．その
+結果，PIDベースの制御は3000回の加算，提案手法は7500回の加算が必要と等価と見積もられ，SNN制御器はPID制御
+と同じ桁のエネルギー効率を達成することが推定された．このエネルギー効率は，将来的にシステムが画像処理タスク
+と統合された場合に，スパイクの疎性により乗算を削減できるため，向上すると考えられている．また，イベントベース
+制御への拡張により，ホバリングなどの制御を行わない場合に，更に消費電力を削減できる可能性があると示唆された．
+
+\subsubsection{}
+本手法で示された，SNNの学習時のデータ拡張や，積分動作のニューロンによる実装などは，手法を拡張させる際にも
+有効であると考えられる．一方で，ラベルをシフトさせる手法は，ドローンの動きが複雑可する場合や，移動速度が
+早くなる場合には適切に補償できなくなる可能性がある．そのため，より一般的に適用可能な遅延補償手法の検討が
+必要であると考えられる．また，示された電力効率はPID制御と同等の桁であることが主張されたが，2倍以上の計算量であり，特にバッテリー
+量が限られる火星ドローンにおいては無視できない差である．そのため，画像を用いた制御と統合した場合の消費
+電力と精度のトレードオフの分析が必要であると考えられる．
+
+\subsection{イベントカメラと複合学習による視覚ベースの自己運動制御}
+\subsubsection{概要}
+この研究は，イベントカメラを用いて取得したイベントベースの視覚情報を入力とし，低レベルの制御アクションを
+出力するSNNを提案している．ネットワークは視覚処理部と制御部にモジュール分割されており，視覚処理部は自己
+教師あり学習，制御部はシミュレーター上で進化アルゴリズムを用いた学習が行われた．また，提案手法はIntel 
+Loihiプロセッサを用いて実装され，評価が行われた．
+
+\subsubsection{イベントカメラの特性}
+本手法では，視覚処理を行うためのセンサーとしてイベントカメラを用いている．イベントカメラは，従来のフレーム
+ベースのカメラとは異なり，ピクセル毎に独立して輝度変化を検出し，変化があった場合のみイベントとして出力する
+センサーである．この特性から，$\mu s$オーダーの高い時間分解能，広いダイナミックレンジ，低消費電力などの
+利点を持ち，スパイクで情報を処理するSNNと相性が良い．
+
+\subsubsection{イベントベースのオプティカルフロー}
+オプティカルフローとは，連続する画像間での物体の動きを表すベクトル場である．
+
+\subsubsection{提案システムの概要}
+この研究では，\ref{fig:fully_system}に示すシステムが提案された．ドローンには，イベントカメラ，ニューロ
+モルフィックプロセッサ，シングルボードコンピュータおよびフライトコントローラーが搭載され，イベントカメラ
+からの情報を制御コマンドに変換するSNNがニューロモルフィックプロセッサ上で実行される．SNNの視覚処理部は，
+Loihiチップ上でイベントベースのオプティカルフローを実装する上で課題となる計算リソースの制約を克服するために，
+イベントカメラは静的でテクスチャが豊富な平坦な表面を見下ろしていることが前提となっている．この条件で，
+イベントカメラの画像平面の内，コーナーの関心領域からの情報のみが用いられ，更にROIあたりのイベント数を90
+に制限することで，200Hzの動作周波数が実現されている．
+
+\begin{center}
+  \includegraphics[width=\linewidth]{figures/fully_system.jpg}
+  \captionof{figure}{Overview of the proposed system (\cite{paredes2024fully})}
+  \label{fig:fully_system}  
+\end{center}
+
+\subsubsection{SNNの学習手法}
+
+\subsubsection{シミュレーションと実飛行での制御精度の比較}
+
+\subsubsection{手法の考察}
 
 
-\section{強化学習SNNを用いたナビゲーション\cite{lee2025bio}}
+\section{SNNによる高機動ナビゲーション}
+\subsection{概要}
+本研究では，深層強化学習アルゴリズムである近位ポリシー最適化（PPO）を使用してSNN飛行ポリシーの学習が
+行われた．この飛行ポリシーでは，システムの状態をドローンの低レベルの制御コマンドに変換することを提案
+している．本手法はシミュレーション上でリングを回避しながら進むタスクにて，SNNの低計算量で時間情報を処理
+することが可能な特性を活かし，ANNと比べて高い成功率で，完了時間も短縮可能なことが示された．
+
+\subsection{PPOアルゴリズムによるSNNエージェントの学習}
+提案されたフレームワークでは，物理シミュレーション環境，PPOアルゴリズムで学習されたSNNベースのエージェント，
+低レベルコントローラーが組み合わされている．高速で移動するゲートを通過するタスクにおいて，SNNエージェントは
+シミュレーションステップ毎に，システムの状態$s \in \mathbb{R}^{19} := (d_{tgt}, q, v, \omega, d_{gate}, v_{gate})$
+を受け取る．ここで，$d_{tgt}$は目標位置までの距離，$q, v, \omega$はドローンの姿勢，速度，角速度，$d_{gate}$
+はドローンと次のゲートの中心との距離，$v_{gate}$はゲートの中心の速度を表す． 
 
 \section{まとめ}
+
 
 \bibliographystyle{junsrt}
 \bibliography{references}
