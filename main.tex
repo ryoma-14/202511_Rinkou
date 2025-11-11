@@ -4,6 +4,7 @@
 \documentclass[a4paper,10.5pt,dvipdfmx]{bxjsarticle}
 
 \usepackage[dvipdfmx]{graphicx} % 画像の取扱いに必要
+\usepackage[dvipdfmx]{hyperref} % ハイパーリンクに必要
 \usepackage{fancyhdr} % ヘッダー・フッターの設定に必要
 \usepackage{lipsum} % ダミーテキスト生成に必要
 \usepackage{bxjalipsum}
@@ -91,24 +92,29 @@ discuss their future prospects to the flight control of Mars exploration drones.
 
 \subsection{スパイキングニューラルネットワーク}
 スパイキングニューラルネットワーク(SNN)とは，生物の脳が{0,1}のスパイクを用いて情報伝達することを模倣した
-AIモデルである．このスパイクを処理するニューロンのモデルとして使用されているのがLIFモデルである．
-LIFモデルは，以下の式で表される．
+AIモデルである．このスパイクを処理するニューロンのモデルとして使用されているのがLIFモデルである．中でも
+Current based-LIFモデル(Cuba-LIF)は，シナプス電流と膜電位の2つの状態の時間変化を考慮したモデルであり，
+以下の式で表される．
 
 \begin{equation}
-  \tau_{m} \frac{dV(t)}{dt} = ( - V(t) + E_{rest}) + I(t)
-  \label{equ:LIF_model}
+  \begin{split}
+    v_i(t+1) = \tau^{mem}_i v_i(t) + i_i(t), \\
+    i_i(t+1) = \tau^{syn}_i i_i(t) + \sum_j W_{ij} s_j(t)
+  \end{split}
+  \label{equ:cuba_lif}
 \end{equation}
 
-ここで，$V(t)$は膜電位，$E_{rest}$は静止膜電位，$I(t)$は入力電流，$\tau_{m}$は膜時定数を表す．
+ここで，$v(t)$は膜電位，$i_i(t)$は入力電流，$\tau_{mem}$は膜時定数，$\tau_{syn}$はシナプス時定数を表す．
 スパイクが入力されると，膜電位が上昇し，入力が無い場合は静止膜電位に向かって減衰する．連続でスパイクが
-入力されることで，膜電位が閾値を超えるとニューロンが発火し，出力スパイクを生成する．SNNの特徴として，
-入出力情報が{0,1}のスパイクで表現されることや，スパイクの入出力がある場合のみニューロンが活動するため，
-専用のニューロモルフィックチップ上に実装した場合，計算量が少なく，省電力，リアルタイム処理が可能である
-ことが挙げられる．一方で，SNNは入出力で扱うスパイクが微分不可能であるため，ANNで一般的に用いられる
-誤差逆伝搬法を直接適用できないため，学習が困難であるという課題がある．現状，SNNの学習手法としては，
-ANNで学習したパラメータをSNNに変換する手法や，代理勾配を用いて誤差逆伝搬法を適用する手法などが
-用いられているが，ANNと比較して学習効率が低いという課題がある．また，ニューロモルフィックチップの性能も
-発展途上であり，ANNと比較して計算能力が劣る場合が多い．
+入力されることで，膜電位が閾値を超えるとニューロンが発火し，出力スパイクを生成する．このCuba-LIFモデル
+は，IntelのニューロモルフィックチップであるLoihiのデフォルトのLIFモデルであり，広く使われている\cite{davies2018loihi}．
+SNNの特徴として，入出力情報が{0,1}のスパイクで表現されることや，スパイクの入出力がある場合のみニューロンが
+活動するため，専用のニューロモルフィックチップ上に実装した場合，計算量が少なく，省電力，リアルタイム処理が
+可能であることが挙げられる．一方で，SNNは入出力で扱うスパイクが微分不可能であるため，ANNで一般的に
+用いられる誤差逆伝搬法を直接適用できないため，学習が困難であるという課題がある．現状，SNNの学習手法
+としては，ANNで学習したパラメータをSNNに変換する手法や，代理勾配を用いて誤差逆伝搬法を適用する手法などが
+用いられているが，ANNと比較して学習効率が低いという課題がある\cite{yamazaki2022spiking}．また，
+ニューロモルフィックチップの性能も発展途上であり，ANNと比較してチップの計算能力が劣る場合が多い．
 
 \subsection{火星探査への展望}
 火星探査において，ドローンは地形の把握や科学観測，通信中継など多様な役割を担うことが期待されている．
@@ -120,7 +126,7 @@ NASAの火星ドローン「Ingenuity」は，火星大気中での飛行実証�
 
 \begin{center}
   \includegraphics[width=\linewidth]{figures/Ingenuity_width.png}
-  \captionof{figure}{Ingenuity Mars Helicopter (\cite{Ingenuity})}
+  \captionof{figure}{Ingenuity Mars Helicopter \cite{Ingenuity}}
   \label{fig:ingenuity_on_mars}
 \end{center}
 
@@ -148,27 +154,17 @@ IMUの入力からモーターコマンドを出力するSNNベースの制御�
 \subsubsection{ネットワーク構成}
 本手法では、ネットワークへの入力としてIMUを用いている．IMUは加速度センサーとジャイロスコープから
 構成され，ドローンの3自由度の加速度と角速度を提供する．ネットワーク全体の構成は図\ref{fig:neuro_network}
-に示す通りである．
-
-\begin{center}
-  \includegraphics[width=\linewidth]{figures/neuro_network.png}
-  \captionof{figure}{SNN network architecture (\cite{stroobants2025neuromorphic})}
-  \label{fig:neuro_network}
-\end{center}
-
+に示す通りである． \\
 2つに分割されたサブネットワークの前段では，IMUの6つの入力から，ドローンの姿勢の
 推定値が算出された．次に，ネットワークの後段では姿勢の推定値と目標の姿勢が入力され，モーターの
-トルクコマンドが出力された．このネットワークに用いられたニューロンモデルはシナプス電流の時間変化を
-考慮したCUBA-LIFモデルで，以下の式で表される．
-
-\begin{equation}
-  \begin{split}
-    v_i(t+1) = \tau^{mem}_i v_i(t) + i_i(t), \\
-    i_i(t+1) = \tau^{syn}_i i_i(t) + \sum_j W_{ij} s_j(t)
-  \end{split}
-  \label{equ:cuba_lif}
-\end{equation}
-
+トルクコマンドが出力された．この
+\begin{center}
+  \includegraphics[width=\linewidth]{figures/neuro_network.png}
+  \captionof{figure}{SNN network architecture \cite{stroobants2025neuromorphic}}
+  \label{fig:neuro_network}
+\end{center}
+ネットワークに用いられたニューロンモデルはシナプス電流の時間変化を
+考慮したCUBA-LIFモデルであり，学習には代理勾配を用いたBack Propagation Through Time(BPTT)が用いられた．
 ここで扱われる入出力はスパイクであるが，ネットワークの入出力は連続値であるため，線形層を用いた変換
 が行われている．これにより，スパイクのエンコードとデコードを学習に組み込むことで，最適化された変換
 を可能にしている．また，学習時には分割されている，姿勢推定ネットワークの出力の線形層の重み$W_o$と，
@@ -201,16 +197,18 @@ SNNの学習には模倣学習が用いられた．学習データは，姿勢�
   \label{equ:arctan_surrogate}
 \end{equation}
 
-SNNは，電流と電圧のリークを考慮するため，時間情報を集約するメモリを暗黙的に持つため，出力に遅延が生じる．
+SNNは，電流と電圧のリークを考慮するため，出力が出されるまでにニューロンに一定以上の入力が蓄積される必要
+があり，出力に遅延が生じる．
 この遅延を補償するために，学習データのラベルを6ステップ先の値にシフトさせて学習が行われた．
 さらに，模倣学習を用いた事による現実とのギャップを低減するために，学習データの拡張が行われた．具体的には，
 (ⅰ)初期の学習データで訓練されたSNNを用いて飛行させ，その時に学習データ用のコントローラーで得られるはず
-だったデータ，(ⅱ)通常のPIDのコントローラーにランダムな外乱を加えたデータ場合のデータが収集され，学習
+だったデータ，(ⅱ)通常のPIDのコントローラーにランダムな外乱を加えたデータが収集され，学習
 データに追加された．これらのデータ拡張により，より広範な状態空間での学習が可能となり，現実世界での適応性
 を向上させている．
-また，制御ネットワークの学習において，正解ラベルとしたPID制御器の積分器は学習を行うことが困難であった．
-これに対して，ネットワークのニューロンの一部の膜時定数を1に設定することで，入力信号を積分することを可能
-にする工夫が行われた．
+また，制御ネットワークの学習において，定常的な誤差を低減するためのI制御の学習は，(ⅰ)ニューロンの漏れに
+より長期間で情報を蓄積できないこと，(ⅱ)PD制御の成分の学習が優先されることから困難である．これに対して，
+制御ネットワークの一部のニューロンのパラメーターを固定し，リークをなくすことで膜電位が積分として機能する
+ようにし，そのニューロンの出力の正解ラベルをI制御の出力のみに設定して学習を行った．
 
 \subsubsection{制御精度の評価}
 位置移動の能力を評価するために，提案手法を用いて1m前進し原点に戻るタスクを実施し，通常のPID制御との比較が
@@ -226,7 +224,7 @@ SNNは，電流と電圧のリークを考慮するため，時間情報を集�
 \begin{center}
   \includegraphics[width=\linewidth]{figures/neuro_comp.png}
   \captionof{figure}{Attitude step responses of A) the fully-trained SNN system, B) the SNN trained with augmentation, 
-  C) the SNN trained with time-shifted data and D) the regular PID flight stack. (\cite{stroobants2025neuromorphic})}
+  C) the SNN trained with time-shifted data and D) the regular PID flight stack. \cite{stroobants2025neuromorphic}}
   \label{fig:neuro_comp}
 \end{center}
 
@@ -242,13 +240,13 @@ SNNは，電流と電圧のリークを考慮するため，時間情報を集�
 
 \subsubsection{考察と今後の課題}
 本手法で示された，SNNの学習時のデータ拡張や，積分動作のニューロンによる実装などは，手法を拡張させる際にも
-有効であると考えられる．一方で，ラベルをシフトさせる手法は，ドローンの動きが複雑可する場合や，移動速度が
+有効であると考えられる．一方で，ラベルをシフトさせる手法は，ドローンがより複雑な軌道で飛行する場合や，移動速度が
 早くなる場合には適切に補償できなくなる可能性がある．そのため，より一般的に適用可能な遅延補償手法の検討が
 必要であると考えられる．また，示された電力効率はPID制御と同等の桁であることが主張されたが，2倍以上の計算量であり，特にバッテリー
 量が限られる火星ドローンにおいては無視できない差である．そのため，画像を用いた制御と統合した場合の消費
 電力と精度のトレードオフの分析が必要であると考えられる．
 
-\subsection{イベントカメラと複合学習による視覚ベースの自己運動制御}
+\subsection{イベントベース視覚の複合学習による自己運動制御}
 \subsubsection{概要}
 この研究は，イベントカメラを用いて取得したイベントベースの視覚情報を入力とし，低レベルの制御アクションを
 出力するSNNを提案している．ネットワークは視覚処理部と制御部にモジュール分割されており，視覚処理部は自己
@@ -265,14 +263,13 @@ Loihiプロセッサを用いて実装され，評価が行われた．
 オプティカルフローとは，連続する画像間での物体やテクスチャがどう動いたかをベクトルで表したものである．
 イベントカメラからの入力に対してSNNを用いてオプティカルフローを推定する手法も提案されており，
 エンコーダー・デコーダーモデルを用いた自己教師あり学習が用いられている\cite{hagenaars2021self}．
-これは，オプティカルフローの正解ラベルをピクセル単位で大量に集めることが困難であるためである．
-SNNを用いた手法は，ANNと同等の水準を達成したことが示されているが，現状入手可能なニューロモルフィック
-チップ上に実装するにはネットワークのニューロン数が多すぎるという課題があり，実際の視覚処理に組み込もう
-と考える場合は，精度を維持しながらネットワークのサイズを削減する工夫が必要となる．
-
+ここで，自己教師あり学習が用いられるのは，オプティカルフローの正解ラベルをピクセル単位で大量に集めること
+が困難であるためである．SNNを用いた手法は，ANNと同等の水準を達成したことが示されているが，現状入手可能な
+ニューロモルフィックチップ上に実装するにはネットワークのニューロン数が多すぎるという課題があり，実際の
+視覚処理に組み込もうと考える場合は，精度を維持しながらネットワークのサイズを削減する工夫が必要となる．
 
 \subsubsection{提案システムの概要}
-この研究では，\ref{fig:fully_system}に示すシステムが提案された．ドローンには，イベントカメラ，ニューロ
+この研究では，図\ref{fig:fully_system}に示すシステムが提案された．ドローンには，イベントカメラ，ニューロ
 モルフィックプロセッサ，シングルボードコンピュータおよびフライトコントローラーが搭載され，イベントカメラ
 からの情報を制御コマンドに変換するSNNがニューロモルフィックプロセッサ上で実行される．SNNの視覚処理部は，
 Loihiチップ上でイベントベースのオプティカルフローを実装する上で課題となる計算リソースの制約を克服するために，
@@ -288,7 +285,8 @@ Loihiチップ上でイベントベースのオプティカルフローを実装
 
 \subsubsection{SNNの学習手法}
 本手法のSNNに用いられたニューロンモデルはCUBA-LIFモデルであり，学習には代理勾配が用いられた．
-視覚処理を行うネットワークでは，密なオプティカルフローを得るために以下の式が用いられた．
+視覚処理を行うネットワークは3つのエンコーダーとプーリング層で構成され，4つのROIからオプティカル
+フローが推定される．このフローから密なオプティカルフローを得るために以下の式が用いられた．
 
 \begin{equation}
   \mathbf{u}(\mathbf{x},\mathbf{H}) = \begin{bmatrix} u(\mathbf{x}, \mathbf{H}) \\ v(\mathbf{x}, \mathbf{H}) \end{bmatrix} 
@@ -336,7 +334,7 @@ $\mathcal{N}(0,0.001)$のノイズを加えて適応度の評価を行い，適�
 
 \begin{center}
   \includegraphics[width=\linewidth]{figures/fully_attitude.png}
-  \captionof{figure}{Comparison of estimation and ground-truth visual observables for sequences with different motion speeds(\cite{paredes2024fully})}
+  \captionof{figure}{Comparison of estimation and ground-truth visual observables for sequences with different motion speeds \cite{paredes2024fully}}
   \label{fig:fully_attitude}
 \end{center}
 
@@ -362,7 +360,7 @@ $\mathcal{N}(0,0.001)$のノイズを加えて適応度の評価を行い，適�
 
 \begin{center}
   \includegraphics[width=\linewidth]{figures/fully_control.jpg}
-  \captionof{figure}{Comparison of results obtained in simulation and during real-world flight tests(\cite{paredes2024fully})}
+  \captionof{figure}{Comparison of results obtained in simulation and during real-world flight tests \cite{paredes2024fully}}
   \label{fig:fully_control}
 \end{center}
 
@@ -393,7 +391,7 @@ $\mathcal{N}(0,0.001)$のノイズを加えて適応度の評価を行い，適�
 
 \subsection{PPOアルゴリズムの概要}
 近接ポリシー最適化(PPO)は，強化学習アルゴリズムの一つであり，信頼性と効率性を両立させながら実装が
-シンプルであることが特徴である\cite{schulman2017proximal}．PPOでは，目的関数として以下の式\ref{equ:ppo_objective}で表される
+シンプルであることが特徴である\cite{schulman2017proximal}．PPOでは，目的関数として以下の式で表される
 クリップ付き代理目的関数が用いられる．
 
 \begin{equation}
@@ -408,13 +406,13 @@ $\mathcal{N}(0,0.001)$のノイズを加えて適応度の評価を行い，適�
 
 \subsection{PPOアルゴリズムによるSNNエージェントの学習}
 提案されたフレームワークでは，物理シミュレーション環境，PPOアルゴリズムで学習されたSNNベースのエージェント，
-低レベルコントローラーが組み合わされている(\ref{fig:bio_training})．高速で移動するゲートを通過するタスクにおいて，SNNエージェントは
+低レベルコントローラーが組み合わされている(図\ref{fig:bio_training})．高速で移動するゲートを通過するタスクにおいて，SNNエージェントは
 シミュレーションステップ毎に，システムの状態$s \in \mathbb{R}^{19} := (d_{tgt}, q, v, \omega, d_{gate}, v_{gate})$
 を受け取る．ここで，$d_{tgt}$は目標位置までの距離，$q, v, \omega$はドローンの姿勢，速度，角速度，$d_{gate}$
 はドローンと次のゲートの中心との距離，$v_{gate}$はゲートの中心の速度を表す．このシステムの状態を元に，SNN
 エージェントは低レベルなフライトコントローラーのコマンドとなる共通推力とボディーレートを出力する．このとき，
 報酬関数によって定義される報酬信号$r$が与えられる．SNNは，1024個のニューロン持つ2つの隠れ層から構成されており，
-シグモイド代理勾配関数を用いて学習が行われた．次に，報酬関数には以下の式\ref{equ:reward_function}が用いられた．
+シグモイド代理勾配関数を用いて学習が行われた．次に，報酬関数には以下の式が用いられた．
 
 \begin{equation}
   r_t = r_{gate,t} + r_{pos,t} + r_{pos,t}\cdot(r_{up,t} + r_{spin,t}) - \beta \cdot r_{acc,t}
@@ -422,7 +420,7 @@ $\mathcal{N}(0,0.001)$のノイズを加えて適応度の評価を行い，適�
 \end{equation}
 
 ここで，$r_{gate,t}$はゲート通過に対する報酬，$r_{pos,t}$はドローンの位置の報酬であり，
-以下の式\ref{equ:position_reward}で定義される．
+以下の式で定義される．
 
 \begin{equation}
   r_{pos,t} = \frac{0.05}{1 + d^{2}_{tgt}} + \frac{2.5}{1 + d^{2}_{gate}} - \frac{2.0}{1 + d^{2}_{ring}}
@@ -438,7 +436,7 @@ $\mathcal{N}(0,0.001)$のノイズを加えて適応度の評価を行い，適�
 
 \begin{center}
   \includegraphics[width=\linewidth]{figures/bio_training.png}
-  \captionof{figure}{Schematic structure of the training flow (\cite{lee2025bio})}
+  \captionof{figure}{Schematic structure of the training flow \cite{lee2025bio}}
   \label{fig:bio_training}
 \end{center}
 
@@ -446,25 +444,25 @@ $\mathcal{N}(0,0.001)$のノイズを加えて適応度の評価を行い，適�
 提案手法との比較を行うベースラインとして，ELU活性化関数を備えた4層からなるANNアーキテクチャが用いられた．まず，
 タスクの成功率の比較において，提案手法はすべてのゲート間距離の設定において，ANNベース手法よりも高い平均報酬を
 達成した．これは，(ⅰ)高い成功率，(ⅱ)各エピソードの完了時間の短縮に起因するものである．まず，成功率の比較に
-ついて，SNNはSOTAであるANNの平均成功率である$83\%$を上回る$85\%$を達成した(\ref{fig:bio_performance}(b))．
+ついて，SNNはSOTAであるANNの平均成功率である$83\%$を上回る$85\%$を達成した(図\ref{fig:bio_performance}(b))．
 特に，ゲート間距離が$0.5m$の場合と初期速度が高い場合において，ANNは成功率が大きく低下したが，SNNは安定した
-成功率を維持した(\ref{fig:bio_performance}(c))．これは，SNNの方が急速な状態変化への適応性に優れていることを
+成功率を維持した(図\ref{fig:bio_performance}(c))．これは，SNNの方が急速な状態変化への適応性に優れていることを
 示している．この理由として，SNNのニューロンが膜電位として時間情報を保持できるため，過去の状態に基づいて現在の
 行動を調整できることが挙げられる．次に，完了時間の比較において，ゲート間隔が長くなるに連れて，SNNはANNよりも
-短い完了時間であることが示された(\ref{fig:bio_performance}(a))．これについて，SNNはANNよりも軌道全体で
+短い完了時間であることが示された(図\ref{fig:bio_performance}(a))．これについて，SNNはANNよりも軌道全体で
 高い速度が維持されていたことが示された．これは，SNNが時間情報を適切に処理できることにより，ゲート通過時の
 加減速が効果的に行われたためであると考えられる．
 
 \begin{center}
   \includegraphics[width=\linewidth]{figures/bio_performance.png}
   \captionof{figure}{Comparison between SNN (our method) and ANN (SOTA) across three performance 
-  metrics(\cite{lee2025bio})}
+  metrics \cite{lee2025bio}}
   \label{fig:bio_performance}
 \end{center}
 
 \subsection{エネルギーとメモリの分析}
 提案SNNモデルは，1024個のニューロンを持つ隠れ層が2つで構成されており，ニューロンの総数は2048個であった．
-この内，$15~20\%$が活性化されており，23ニューロンの入力層と4ニューロンの出力層を含めた場合の実際の演算数
+この内，$15~20\%$が活性化されており，ニューロンが23個の入力層と4個の出力層を含めた場合の実際の演算数
 は，約215,000回であると見積もられる．また，モデルのメモリ使用量は，シナプス接続毎の重み，層ごとの時定数，
 ニューロン毎のバイアスをモデルパラメータとし，float32で表現した場合，約4.3MBであると見積もられた．また，
 これらのパラメーターを量子化し，int8で表現した場合，約1.08MBに削減できると見積もられた．
@@ -490,15 +488,16 @@ SNNを用いた3つの論文を紹介した．
 IMUと組み合わせたマルチモーダルなアプローチなどによる精度の向上が検討されるべきであると考えられる．
 次に，制御へのSNNの応用に関しては，各学習方法における特徴が反映されると考えられる．模倣学習は，特に
 リアリティギャップの低減が可能であることが特徴であるが，学習データの多様性への依存性からデータの拡張
-が重要であると考えられる．一方，進化アルゴリズムは
-強化学習は，未知の環境への適応性が高いことが特徴であるが，この特徴を
-最大限に活用するためには，適切な報酬関数の設計が重要である．
-今後の研究では，火星表面の風による外乱への堅牢性を獲得するために，外乱を含むシミュレーション環境での
-強化学習の実施や，イベントカメラによる視覚処理と強化学習を組み合わせた制御モデルを構築することを
-目指したいと考えている．
+が重要であると考えられる．一方，進化アルゴリズムは今回の適用例では単純な線形層の学習への適用に留まって
+おり，モデルサイズをより小さくすることが求められる場合には，最適かもしれないが，複雑な環境への適応性
+を求める場合の制御コントローラーの学習には十分な精度が得られないという懸念がある．最後に強化学習は，
+未知の環境への適応性が高いことが特徴であるが，この特徴を最大限に活用するためには，適切な報酬関数の設計
+が重要である．今後の研究では，火星表面の風による外乱への堅牢性を獲得するために，外乱を含む
+シミュレーション環境での強化学習の実施や，イベントカメラによる視覚処理と強化学習を組み合わせた制御モデル
+を構築することを目指したいと考えている．
 
 \small
-\bibliographystyle{junsrt}
+\bibliographystyle{my_junsrt}
 \bibliography{references}
 
 \end{multicols}
