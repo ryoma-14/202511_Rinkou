@@ -93,8 +93,8 @@ discuss their future prospects to the flight control of Mars exploration drones.
 
 \subsection{スパイキングニューラルネットワーク}
 スパイキングニューラルネットワーク(SNN)とは，生物の脳が{0,1}のスパイクを用いて情報伝達することを模倣した
-AIモデルである．このスパイクを処理するニューロンのモデルとして使用されているのがLIFモデルである．中でも
-Current based Leaky Integrate-and-Fire (LIF)は，シナプス電流と膜電位の2つの状態の時間変化を考慮
+AIモデルである．このスパイクを処理するニューロンのモデルとして使用されているのがLeaky Integrate-and-Fire
+ (LIF)モデルである．中でもCurrent based LIF(CUBA-LIF)は，シナプス電流と膜電位の2つの状態の時間変化を考慮
 したモデルであり，以下の式で表される．
 
 \begin{equation}
@@ -107,11 +107,11 @@ Current based Leaky Integrate-and-Fire (LIF)は，シナプス電流と膜電位
 
 ここで，$v(t)$は膜電位，$i_i(t)$は入力電流，$\tau_{mem}$は膜時定数，$\tau_{syn}$はシナプス時定数を表す．
 スパイクが入力されると，膜電位が上昇し，入力が無い場合は静止膜電位に向かって減衰する．連続でスパイクが
-入力されることで，膜電位が閾値を超えるとニューロンが発火し，出力スパイクを生成する．このCuba-LIFモデル
+入力されることで，膜電位が閾値を超えるとニューロンが発火し，出力スパイクを生成する．このCUBA-LIFモデル
 は，IntelのニューロモルフィックチップであるLoihiのデフォルトのLIFモデルであり，広く使われている\cite{davies2018loihi}．
 SNNの特徴として，入出力情報が{0,1}のスパイクで表現されることや，スパイクの入出力がある場合のみニューロンが
 活動するため，専用のニューロモルフィックチップ上に実装した場合，計算量が少なく，省電力，リアルタイム処理が
-可能であることが挙げられる．一方で，SNNは入出力で扱うスパイクが微分不可能であるため，人口ニューラル
+可能であることが挙げられる．一方で，SNNは入出力で扱うスパイクが微分不可能であるため，人工ニューラル
 ネットワーク(ANN)で一般的に用いられる誤差逆伝搬法を直接適用できないため，学習が困難であるという課題がある．
 現状，SNNの学習手法としては，ANNで学習したパラメータをSNNに変換する手法や，代理勾配を用いて誤差逆伝搬法を
 適用する手法などが用いられているが，ANNと比較して学習効率が低いという課題がある\cite{yamazaki2022spiking}．
@@ -134,12 +134,13 @@ NASAの火星ドローン「Ingenuity」は，火星大気中での飛行実証�
 \subsection{本調査の目的}
 本調査では，ドローンの飛行制御において，SNNのネットワークを姿勢安定化や移動などの低レベル制御に用いた
 2つの研究と，動的な環境での経路計画を含めたナビゲーションにSNNを用いた1つの研究について紹介する．1本目の研究では，
-IMUセンサーを用いて姿勢推定と制御を行うことを提案したNeuromorphic attitude estimation and control
+IMUセンサーを用いて姿勢推定と制御を行うことを提案した"Neuromorphic attitude estimation and control"
 \cite{stroobants2025neuromorphic}を紹介する．2本目の研究では，入力にイベントカメラを使用し，自己
 教師あり学習と進化アルゴリズムを組み合わせた複合学習により視覚ベースの自己運動制御を行うことを提案した
-Fully neuromorphic vision and control for autonomous drone flight\cite{paredes2024fully}を
-紹介する．3本目の研究では，強化学習アルゴリズムであるPPOによりSNNを学習させてドローンの高機動ナビゲーション
-を行うことを提案したBio-Inspired Drone Control A Reinforcement Learning-Trained Spiking Neural Networks for Agile Navigation in Dynamic Environment
+"Fully neuromorphic vision and control for autonomous drone flight"\cite{paredes2024fully}を
+紹介する．3本目の研究では，強化学習アルゴリズムであるProximal Policy Optimization (PPO)によりSNNを
+学習させてドローンの高機動ナビゲーションを行うことを提案した"Bio-Inspired Drone Control A Reinforcement 
+Learning-Trained Spiking Neural Networks for Agile Navigation in Dynamic Environment"
 \cite{lee2025bio}を紹介する．最後に，各手法の分析から将来の火星探査ミッションにおけるドローン飛行制御
 への応用可能性について議論を行う．
 
@@ -165,7 +166,7 @@ IMUの入力からモーターコマンドを出力するSNNベースの制御�
   \label{fig:neuro_network}
 \end{center}
 ネットワークに用いられたニューロンモデルはシナプス電流と膜電位の2つの状態の時間変化を考慮した
-Current Based LIF(CUBA-LIF)モデルにリカレント接続を組み合わせた以下の式で定義される．
+CUBA-LIFモデルにリカレント接続を組み合わせた以下の式で定義される．
 
 \begin{equation}
   \begin{split}
